@@ -35,6 +35,12 @@ Run the commands exactly as written from the repository root, with no `cd`,
    mismatch means the pinned release changed or the download was corrupted; stop
    and tell the user.
 
+   If a registration is `stale` with `foreign` ownership (for example, one left
+   by an earlier `npx rea-agents setup`), show the user the remediation and ask
+   before removing that `rea` entry from the client config; then rerun step 3.
+   If the Hopper download fails with a network or proxy 403 error in a cloud
+   session, the environment's network policy must allow `www.hopperapp.com`.
+
 5. Tell the user to restart Claude Code so the REA MCP server loads.
 
 Notes:

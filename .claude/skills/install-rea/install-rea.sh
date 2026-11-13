@@ -231,7 +231,15 @@ done
 
 SETUP_ARGS=(setup --yes)
 for c in "${CLIENTS[@]}"; do SETUP_ARGS+=(--client "$c"); done
-[ $WANT_HOPPER = 1 ] && SETUP_ARGS+=(--install-hopper)
+if [ $WANT_HOPPER = 1 ]; then
+  SETUP_ARGS+=(--install-hopper)
+  # rea setup does not refresh package indexes; stale or empty apt lists make
+  # Hopper's Qt 6 dependencies look uninstallable.
+  if [ "$PKG" = apt ] && [ "$SUDO" != none ]; then log "Refreshing apt package lists"; $SUDO apt-get update -qq; fi
+fi
+# Node's built-in fetch ignores HTTPS_PROXY unless asked; rea setup fetches the
+# Hopper release feed with it.
+if [ -n "${HTTPS_PROXY:-${https_proxy:-}}" ]; then export NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1; fi
 log "Running rea ${SETUP_ARGS[*]}"
 set +e
 "$REA_BIN" "${SETUP_ARGS[@]}" --format json > "$TMP/setup.json"
@@ -249,6 +257,7 @@ const read = p => { try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch
 const setup = read(process.argv[2]), doc = read(process.argv[3]);
 console.log(`\nrea setup: ${setup?.status ?? "unreadable output"} (exit ${process.argv[4]})`);
 for (const [k, v] of Object.entries(setup?.clients ?? {})) console.log(`  client ${k}: ${v.status}`);
+if (setup?.remediation) console.log(`  ${setup.code ?? "remediation"}: ${setup.remediation}`);
 const d = doc?.doctor ?? doc ?? {};
 const insp = d.providerInspections ?? setup?.doctor?.providerInspections ?? [];
 console.log("providers:");
@@ -259,7 +268,10 @@ for (const p of insp) {
 const id = d.identity ?? setup?.doctor?.identity;
 if (id) {
   console.log(`skill: ${id.skill?.state}`);
-  for (const r of id.registrations ?? []) console.log(`registration ${r.client}: ${r.state}`);
+  for (const r of id.registrations ?? []) {
+    console.log(`registration ${r.client}: ${r.state}`);
+    if (r.state !== "aligned" && r.remediation) console.log(`  ${r.remediation}`);
+  }
 }
 EOF
 
