@@ -6,11 +6,13 @@ description: Install REA with its deep-analysis providers (Ghidra, JADX MCP, Kun
 # Install REA
 
 Run the bundled installer in two steps: show the plan, get approval, then apply.
+Run the commands exactly as written from the repository root, with no `cd`,
+`PATH=` or other prefix, so they match the allow rule in `.claude/settings.json`.
 
 1. Show the plan (changes nothing):
 
    ```bash
-   bash "${CLAUDE_SKILL_DIR:-.claude/skills/install-rea}/install-rea.sh" --plan
+   bash .claude/skills/install-rea/install-rea.sh --plan
    ```
 
    Pass through any options the user asked for: `--no-hopper`, `--no-ghidra`,
@@ -24,7 +26,7 @@ Run the bundled installer in two steps: show the plan, get approval, then apply.
    timeout of at least 10 minutes (or run in the background):
 
    ```bash
-   bash "${CLAUDE_SKILL_DIR:-.claude/skills/install-rea}/install-rea.sh" --yes
+   bash .claude/skills/install-rea/install-rea.sh --yes
    ```
 
 4. Report the summary the script prints: `rea setup` status, each provider's
